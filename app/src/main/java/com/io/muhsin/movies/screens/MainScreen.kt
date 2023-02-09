@@ -1,7 +1,78 @@
 package com.io.muhsin.movies.screens
 
+import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Card
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import coil.compose.rememberImagePainter
+import com.io.muhsin.movies.MainViewModel
+import com.io.muhsin.movies.data.models.Movies
+import com.io.muhsin.movies.navigation.Screens
 
 @Composable
-fun MainScreen (){
+fun MainScreen(navController: NavController, viewModel: MainViewModel) {
+    val allMovies = viewModel.allMovies.observeAsState(listOf()).value
+
+    Surface(Modifier.fillMaxSize()) {
+        LazyColumn(Modifier.padding(20.dp)) {
+            items(allMovies.take(10)) { item ->
+                MovieItem(item = item,navController = navController)
+            }
+        }
+    }
+}
+
+@Composable
+fun MovieItem(item: Movies,navController: NavController) {
+    Card(elevation = 4.dp,
+        modifier = Modifier
+            .padding(top = 8.dp)
+            .clickable {
+                navController.navigate(Screens.DetailsScreen.route+"/${item.id}")
+            }
+    ) {
+        Row(modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+        ) {
+          Image(
+              painter = rememberImagePainter(item.image?.medium),
+              contentDescription = null,
+              Modifier.size(128.dp)
+
+          )
+            Column {
+                Text(
+                    text =item.name.toString(),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Row {
+                   Text(text = "Rating", fontWeight = FontWeight.Bold)
+                   Text(text = item.rating?.average.toString())
+                }
+                Row {
+                    Text(text = "Genre", fontWeight = FontWeight.Bold)
+                    item.genres?.take(2)?.forEach { Text(text = "$it") }
+                }
+                Row {
+                    Text(text = "Premiered", fontWeight = FontWeight.Bold)
+                    Text(text = item.premiered.toString())
+                }
+            }
+        }
+    }
+
 }
